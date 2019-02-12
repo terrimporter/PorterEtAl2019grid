@@ -2,10 +2,10 @@
 
 This repository contains the dataflow and scripts I used to process the COI metabarcode reads in the paper Porter et al., 2019 (in prep).
 
-## Overview
+## Data analysis outline
 
-1. Raw reads were processed using the SCVUC v2.0 pipeline.
-2. The taxonomic assignments for each marker were concatenated (LV2016_1.tar.gz) and headers edited for analysis in R (LV2016_2.tar.gz) using GRDIname.map and the Perl script reviseGRDInames2.plx .
+1. Raw reads were processed using the SCVUC v2.0 pipeline available from https://github.com/EcoBiomics-Zoobiome/SCVUC_COI_metabarcode_pipeline 
+2. The resulting taxonomic assignments for each marker were concatenated (LV2016_1.tar.gz) and headers edited for analysis in R (LV2016_2.tar.gz) using GRDIname.map and the Perl script reviseGRDInames2.plx .
 3. Figures were pepared in R as follows:
   * Fig 1 was generated with Fig1_PropConfID.R from LV2016_2.csv
   * Fig 2 was generated with Fig2_Richness.R from LV2016_2.csv
