@@ -1,5 +1,5 @@
-# Teresita M. Porter, Feb. 13, 2019
-	
+# Teresita M. Porter, July 8, 2019
+
 library(vegan)
 library(indicspecies)
 library(reshape2)
@@ -12,6 +12,8 @@ library(readr)
 library(ggplot2)
 library(gridExtra)
 library(dichromat)
+library("psych") #corr.test # remove
+library(Hmisc)
 
 ###################################################################
 # NEW FUNCTION TO EXTRACT SUBSTRING FROM THE RIGHT
@@ -43,7 +45,6 @@ fix_family <- function (df) {
 ###################################################################
 # NEW FUNCTION TO MERGE family_genus IF gBP <= 0.30
 ###################################################################
-
 fix_genus <- function (df) {
   for (row in 1:nrow(df)) {
     
@@ -65,7 +66,6 @@ fix_genus <- function (df) {
 ###################################################################
 # NEW FUNCTION TO MERGE genus_species IF sBP <= 0.70 (95% correct)
 ###################################################################
-
 fix_species <- function (df) {
   for (row in 1:nrow(df)) {
     
@@ -83,11 +83,9 @@ fix_species <- function (df) {
   }
   return(df)
 }
-
 ###################################################################
 
-# Read infile prepared by python script
-## LV2016_2.csv is the taxonomic assignment table
+# Read infile
 A<-read.table(file="LV2016_2.csv", head=TRUE, sep=",")
 
 # Select phylum Arthropoda only
@@ -95,10 +93,8 @@ Arth_df<-A[A$phylum=="Arthropoda",]
 
 # Subsample 1C1E down to 4, and 1C3E down to 4 to create balanced dataset
 B1<-Arth_df[Arth_df$cores==1 & Arth_df$extractions==1,]
-
 # Randomly subsample 8 unique gridcoord without replacement so 1C3E can be subsampled to create balanced design
 B1.gridcoord<-sample(unique(B1$gridcoord), 4, replace=FALSE)
-
 # Retrieve gridcoord
 B1<-B1[B1$gridcoord=="11" |
          B1$gridcoord=="23" |
@@ -106,16 +102,13 @@ B1<-B1[B1$gridcoord=="11" |
          B1$gridcoord=="35",]
 
 B2<-Arth_df[Arth_df$cores==1 & Arth_df$extractions==3,]
-
 # Grab same gridcoord as above for fair comparison
 B2<-B2[B2$gridcoord=="11" |
          B2$gridcoord=="23" |
          B2$gridcoord=="31" |
          B2$gridcoord=="35",]
-
 # Grab XC3E
 B3<-Arth_df[Arth_df$cores!=1 & Arth_df$extractions==3,]
-
 # combine B1, B2, and B3
 B4<-rbind(B1,B2,B3)
 
@@ -150,8 +143,8 @@ df[df>0] <-1
 ##### Do indicator species analysis
 ###################################################################
 
-# Turn data frame into tables for each sampling method
-# Used rarefied presence-abasence matrices for indicator species analysis
+# Turn data frame into tables for each experiment
+# Used rarefied p-a matrices for indicator species analysis
 
 # Break it down by experiment
 X1C1E<-data.frame(df[grepl("_1C1E_", rownames(df)),])
@@ -163,19 +156,19 @@ X4C3E<-data.frame(df[grepl("_4C3E_",rownames(df)),])
 X6C3E<-data.frame(df[grepl("_6C3E_",rownames(df)),])
 X8C3E<-data.frame(df[grepl("_8C3E_",rownames(df)),])
 X915C3E<-data.frame(df[(grepl("_9C3E_",rownames(df)) |
-                            grepl("_12C3E_",rownames(df)) |
-                            grepl("_13C3E_",rownames(df)) |
-                            grepl("_14C3E_",rownames(df)) |
-                            grepl("_15C3E_",rownames(df)) ),])
+                          grepl("_12C3E_",rownames(df)) |
+                          grepl("_13C3E_",rownames(df)) |
+                          grepl("_14C3E_",rownames(df)) |
+                          grepl("_15C3E_",rownames(df)) ),])
 
 # Sort out the groups for each experiment:  
 # look at site indicators
 groups_1C1E<-c(rep(1,12), 
-            rep(2,12))
+               rep(2,12))
 groups_1C3E<-c(rep(1,12), 
                rep(2,11))
 groups_915C3E<-c(rep(1,12),
-                  rep(2,12))
+                 rep(2,12))
 groups_2C3E<-c(rep(1,12),
                rep(2,12))
 groups_4C3E<-c(rep(1,12),
@@ -185,7 +178,7 @@ groups_6C3E<-c(rep(1,12),
 groups_8C3E<-c(rep(1,12),
                rep(2,12))
 
-# Do indicator species analysis
+# Do indicator analysis
 X1C1E_indval=multipatt(X1C1E, groups_1C1E, control=how(nperm=999))
 X1C3E_indval=multipatt(X1C3E, groups_1C3E, control=how(nperm=999))
 X915C3E_indval=multipatt(X915C3E, groups_915C3E, control=how(nperm=999))
@@ -194,7 +187,7 @@ X4C3E_indval=multipatt(X4C3E, groups_4C3E, control=how(nperm=999))
 X6C3E_indval=multipatt(X6C3E, groups_6C3E, control=how(nperm=999))
 X8C3E_indval=multipatt(X8C3E, groups_8C3E, control=how(nperm=999))
 
-# Grab the data frame containing the pvalues from each analysis
+# Grab the data frame containing the p-values from each analysis
 X1C1E_indval_df<-data.frame(X1C1E_indval$sign)
 X1C3E_indval_df<-data.frame(X1C3E_indval$sign)
 X915C3E_indval_df<-data.frame(X915C3E_indval$sign)
@@ -203,28 +196,28 @@ X4C3E_indval_df<-data.frame(X4C3E_indval$sign)
 X6C3E_indval_df<-data.frame(X6C3E_indval$sign)
 X8C3E_indval_df<-data.frame(X8C3E_indval$sign)
 
-# Grab ILC indicator taxa with pvalues <= 0.05
+# Grab ILC indicator ESVs with pvalues <= 0.05
 ILC_1C1E_indic<-X1C1E_indval_df[which(X1C1E_indval_df$p.value<=0.05 & 
-                                              X1C1E_indval_df$s.1==1 &
-                                              X1C1E_indval_df$s.2==0),]
+                                        X1C1E_indval_df$s.1==1 &
+                                        X1C1E_indval_df$s.2==0),]
 ILC_1C3E_indic<-X1C3E_indval_df[which(X1C3E_indval_df$p.value<=0.05 & 
-                                              X1C3E_indval_df$s.1==1 &
-                                              X1C3E_indval_df$s.2==0),]
+                                        X1C3E_indval_df$s.1==1 &
+                                        X1C3E_indval_df$s.2==0),]
 ILC_915C3E_indic<-X915C3E_indval_df[which(X915C3E_indval_df$p.value<=0.05 & 
-                                              X915C3E_indval_df$s.1==1 &
-                                              X915C3E_indval_df$s.2==0),]
+                                            X915C3E_indval_df$s.1==1 &
+                                            X915C3E_indval_df$s.2==0),]
 ILC_2C3E_indic<-X2C3E_indval_df[which(X2C3E_indval_df$p.value<=0.05 & 
-                                                     X2C3E_indval_df$s.1==1 &
-                                                     X2C3E_indval_df$s.2==0),]
+                                        X2C3E_indval_df$s.1==1 &
+                                        X2C3E_indval_df$s.2==0),]
 ILC_4C3E_indic<-X4C3E_indval_df[which(X4C3E_indval_df$p.value<=0.05 & 
-                                                     X4C3E_indval_df$s.1==1 &
-                                                     X4C3E_indval_df$s.2==0),]
+                                        X4C3E_indval_df$s.1==1 &
+                                        X4C3E_indval_df$s.2==0),]
 ILC_6C3E_indic<-X6C3E_indval_df[which(X6C3E_indval_df$p.value<=0.05 & 
-                                                     X6C3E_indval_df$s.1==1 &
-                                                     X6C3E_indval_df$s.2==0),]
+                                        X6C3E_indval_df$s.1==1 &
+                                        X6C3E_indval_df$s.2==0),]
 ILC_8C3E_indic<-X8C3E_indval_df[which(X8C3E_indval_df$p.value<=0.05 & 
-                                                     X8C3E_indval_df$s.1==1 &
-                                                     X8C3E_indval_df$s.2==0),]
+                                        X8C3E_indval_df$s.1==1 &
+                                        X8C3E_indval_df$s.2==0),]
 
 # Add site to the data frame
 ILC_1C1E_indic$site <- "ILC"
@@ -261,7 +254,7 @@ rownames(ILC_4C3E_indic) <- NULL
 rownames(ILC_6C3E_indic) <- NULL
 rownames(ILC_8C3E_indic) <- NULL
 
-# Grab NZC indicator taxa with pvalues <= 0.05
+# Grab NZC indicator ESVs with pvalues <= 0.05
 NZC_1C1E_indic<-X1C1E_indval_df[which(X1C1E_indval_df$p.value<=0.05 & 
                                         X1C1E_indval_df$s.1==0 &
                                         X1C1E_indval_df$s.2==1),]
@@ -335,54 +328,15 @@ indic <- rbind(
   NZC_4C3E_indic, 
   NZC_6C3E_indic,
   NZC_8C3E_indic)
-  
-# Map taxonomy to indicator taxa 
-# Just keep the unique marker_OTUs and their taxonomic assignments
-B<-unique(B4[,c(3,14:40)])
-
-# Add taxonomy to indicator species (keep all indic species, just add the taxonomy) left outer join
-merged<-merge(x=indic, y=B, by="marker_OTU", all.x=TRUE)
-
-# Check rows
-nrow(indic)
-nrow(merged)
-
-# pivot table
-pivot<-dcast(merged, site + marker_OTU ~ expt, value.var="marker_OTU", fun.aggregate = length)
-
-# pull out each site
-pivotILC<-pivot[pivot$site=="ILC",]
-pivotNZC<-pivot[pivot$site=="NZC",]
 
 #######################################################
-### Do Pearson correlation plots
-#######################################################
-
-custom_palette_2 <- colorRampPalette(c("#F8766D", "white", "#00BFC4")) 
-
-pdf("F4_indic_correlations.pdf")
-par(mfrow = c(2, 2))
-
-ILC <- cor(pivotILC[3:9])
-corrplot(ILC, type="upper", col= custom_palette_2(100),
-         tl.col="black", cl.ratio = 0.5, cl.align = "r", tl.srt = 45, cl.cex=1, tl.cex=1)
-mtext("Island Lake", at=2.75, line=0.5, cex=1.25)
-
-NZC <- cor(pivotNZC[3:9])
-corrplot(NZC, type="upper", col=custom_palette_2(100),
-         tl.col="black", cl.ratio = 0.5, cl.align = "r", tl.srt = 45, cl.cex=1, tl.cex=1)
-mtext("Nimitz", at=1.5, line=0.5, cex=1.25)
-
-dev.off()
-
-#######################################################
-### Create heat trees for indicator species
+### Create heat trees for indicator taxa
 #######################################################
 
 # select indicator taxa based on marker_OTU from original balanced matrix
 Z<-as.data.frame(as.matrix(B4), stringsAsFactors = FALSE)
 
-# filter by bootsrrap support
+# filter by bootstrap support
 Zf<- fix_family(Z)
 Zg<- fix_genus(Zf)
 Zs<- fix_species(Zg)
@@ -404,10 +358,10 @@ Zs$lineage <- apply( Zs[,44:49] , 1 , paste , collapse = ";" )
 # make sure reads are integers
 Zs$reads<-as.numeric(factor(Zs$reads))
 
-# make abundance matrix with otus in rows and sites in columns
+# make abundance matrix with ESVs in rows and sites in columns
 pivot2<-dcast(Zs, marker_OTU + lineage ~ GRDIname, value.var="reads", fun.aggregate = sum)
 
-# Narrow down this abundance matrix to just the indicator taxa
+# Narrow down this abundance matrix to just the indicator ESVs
 indic2<-merge(x=indic, y=pivot2, by="marker_OTU", all.x=TRUE)
 
 # Remove unneeded columns
@@ -458,7 +412,7 @@ esvs<-esvs[,-1]
 Y<-data.frame(colnames(esvs))
 Y2<-data.frame(Y[-c(1:2),])
 
-#rename column
+# rename column
 names(Y2)<-"sample_ID"
 
 ## split copy into new dataframe
@@ -470,7 +424,7 @@ names(Y3)<-c("site","date","coreExpt","rep")
 ## copy coreExpt column
 Y3$expt<-Y3$coreExpt
 
-#merge
+# merge
 Y4<-merge(Y2, Y3, by="row.names")
 Y4<-Y4[,-c(1,4:6)]
 
@@ -484,23 +438,26 @@ Y4$site_layer<-paste(Y4$site, Y4$layer, sep="_")
 samples<-Y4
 
 # make sure columns in esvs are in same order as rows in samples
-#split up esvs to grab target vector
+# split up esvs to grab target vector
 esvs2<-esvs[,3:length(names(esvs))]
 target<-names(esvs2)
  
-#match up row order in samples
+# match up row order in samples
 samples<-samples[match(target, samples$sample_ID),]
 
-#reset rownames
+# reset rownames
 rownames(samples) <- NULL
 
-#ensure samples are not factors
+# ensure samples are not factors
 samples[]<-lapply(samples, as.character)
 
 ##### run metacoder
 # check format of input files first
 str(esvs)
 str(samples)
+
+# Add X in front of each expt, because starting with number messes everything up
+samples$expt <- paste("X", samples$expt, sep="")
 
 # parse taxonomic info and find reads per ESV per sample, SLOW be PATIENT!
 obj <- parse_tax_data(esvs, 
@@ -553,7 +510,7 @@ set.seed(1) # This makes the plot appear the same each time it is run
 NZC<-heat_tree(obj, 
                title = "Nimitz",
                title_size = 0.05,
-               node_label = ifelse(obj$data$tax_occ$NZC85 <=41.5,"",taxon_names), # present in 10%+ samples (n=83)
+               node_label = ifelse(obj$data$tax_occ$NZC85 <=41.5,"",taxon_names), # present in 50%+ samples (n=83)
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = NZC85, 
@@ -565,7 +522,7 @@ NZC<-heat_tree(obj,
 
 # print both plots on one page
 g<-grid.arrange(ILC, NZC, ncol=1)
-ggsave("F5_two_heattrees.pdf", g)
+ggsave("Fig3_two_heattrees.pdf", g)
 
 # number of samples that have reads for each site
 obj$data$tax_occ <- calc_n_samples(obj, "tax_abund", 
@@ -610,7 +567,7 @@ set.seed(1) # This makes the plot appear the same each time it is run
 I_O<-heat_tree(obj, 
                title = "Island Lake - Organic",
                title_size = 0.05,
-               node_label = ifelse(obj$data$tax_occ$ILC45_O <=14,"",taxon_names), # present in 10%+ samples (n=28)
+               node_label = ifelse(obj$data$tax_occ$ILC45_O <=14,"",taxon_names), # present in 50%+ samples (n=28)
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = ILC45_O, 
@@ -624,7 +581,7 @@ set.seed(1) # This makes the plot appear the same each time it is run
 I_M<-heat_tree(obj, 
                title = "Island Lake - Mineral",
                title_size = 0.05,
-               node_label = ifelse(obj$data$tax_occ$ILC45_M <=14,"",taxon_names), # present in 10%+ samples (n=28)
+               node_label = ifelse(obj$data$tax_occ$ILC45_M <=14,"",taxon_names), # present in 50%+ samples (n=28)
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = ILC45_M, 
@@ -653,7 +610,7 @@ set.seed(1) # This makes the plot appear the same each time it is run
 N_O<-heat_tree(obj, 
                title = "Nimitz - Organic",
                title_size = 0.05,
-               node_label = ifelse(obj$data$tax_occ$NZC85_O <=13.5,"",taxon_names), # present in 10%+ samples (n=28)
+               node_label = ifelse(obj$data$tax_occ$NZC85_O <=13.5,"",taxon_names), # present in 50%+ samples (n=28)
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = NZC85_O, 
@@ -667,7 +624,7 @@ set.seed(1) # This makes the plot appear the same each time it is run
 N_M<-heat_tree(obj, 
                title = "Nimitz - Mineral",
                title_size = 0.05,
-               node_label = ifelse(obj$data$tax_occ$NZC85_M <=14,"",taxon_names), # present in 10%+ samples (n=28)
+               node_label = ifelse(obj$data$tax_occ$NZC85_M <=14,"",taxon_names), # present in 50%+ samples (n=28)
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = NZC85_M, 
@@ -679,7 +636,7 @@ N_M<-heat_tree(obj,
 
 # print both plots on one page
 h<-grid.arrange(I_B, N_B, I_O, N_O, I_M, N_M, ncol=2)
-ggsave("Supp_six_heattrees.pdf", h, height=10, width=7.5, units = "in")
+ggsave("FigS10_layers_heattrees.pdf", h, height=10, width=7.5, units = "in")
 
 # number of samples that have reads for each extraction experiment
 obj$data$tax_occ <- calc_n_samples(obj, "tax_abund", 
@@ -687,15 +644,21 @@ obj$data$tax_occ <- calc_n_samples(obj, "tax_abund",
 print(obj)
 
 # plot taxonomic data for each sample in heat trees
+
+grey_palette <- function()
+{
+  return(c("white","gray87","gray48","red4"))
+}
+
 set.seed(1) # This makes the plot appear the same each time it is run 
 E1<-heat_tree(obj, 
-               title = "1C1E - 1 DNA extraction", 
+               title = "1 DNA extraction", 
                title_size = 0.05,
                node_label = ifelse(obj$data$tax_occ[[2]] <=12,"",taxon_names), # present in 50%+ samples n=24
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = obj$data$tax_occ[[2]], 
-               node_color_range = coral_palette(), #default is diverging_palette
+               node_color_range = grey_palette(), #default is diverging_palette
                node_size_axis_label = "ESVs",
                node_color_axis_label = "Samples",
                layout = "davidson-harel", # The primary layout algorithm
@@ -703,13 +666,13 @@ E1<-heat_tree(obj,
 
 set.seed(1) # This makes the plot appear the same each time it is run 
 E3<-heat_tree(obj, 
-               title = "1C3E - 3 DNA extractions",
+               title = "3 DNA extractions",
                title_size = 0.05,
-               node_label = ifelse(obj$data$tax_occ[[3]] <=12,"",taxon_names), # present in 10%+ samples (n=23)
+               node_label = ifelse(obj$data$tax_occ[[3]] <=12,"",taxon_names), # present in 50%+ samples (n=23)
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = obj$data$tax_occ[[3]], 
-               node_color_range = cyan_palette(), #default is diverging_palette
+               node_color_range = grey_palette(), #default is diverging_palette
                node_size_axis_label = "ESVs",
                node_color_axis_label = "Samples",
                layout = "davidson-harel", # The primary layout algorithm
@@ -717,7 +680,7 @@ E3<-heat_tree(obj,
 
 # print both plots on one page
 i<-grid.arrange(E1, E3, ncol=1)
-ggsave("Supp_two_extraction_heattrees.pdf", i)
+ggsave("FigS9_two_extraction_heattrees.pdf", i)
 
 # number of samples that have reads for each site
 obj$data$tax_occ <- calc_n_samples(obj, "tax_abund", 
@@ -725,15 +688,16 @@ obj$data$tax_occ <- calc_n_samples(obj, "tax_abund",
 print(obj)
 
 # plot taxonomic data for each sample in heat trees
+
 set.seed(1) # This makes the plot appear the same each time it is run 
 C1<-heat_tree(obj, 
                title = "1 core", 
                title_size = 0.05,
-               node_label = ifelse(obj$data$tax_occ[[3]] <=11.5,"",taxon_names), # present in 50%+ samples n=28
+               node_label = ifelse(obj$data$tax_occ[[3]] <=11.5,"",taxon_names), # present in 50%+ samples n=24
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = obj$data$tax_occ[[3]], 
-               node_color_range = blue_palette(), #default is diverging_palette
+               node_color_range = grey_palette(), #default is diverging_palette
                node_size_axis_label = "ESVs",
                node_color_axis_label = "Samples",
                layout = "davidson-harel", # The primary layout algorithm
@@ -743,11 +707,11 @@ set.seed(1) # This makes the plot appear the same each time it is run
 C2<-heat_tree(obj, 
                title = "2 pooled cores",
                title_size = 0.05,
-               node_label = ifelse(obj$data$tax_occ[[4]] <=12,"",taxon_names), # present in 10%+ samples (n=28)
+               node_label = ifelse(obj$data$tax_occ[[4]] <=12,"",taxon_names), # present in 50%+ samples (n=24)
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = obj$data$tax_occ[[4]], 
-               node_color_range = blue_palette(), #default is diverging_palette
+               node_color_range = grey_palette(), #default is diverging_palette
                node_size_axis_label = "ESVs",
                node_color_axis_label = "Samples",
                layout = "davidson-harel", # The primary layout algorithm
@@ -757,11 +721,11 @@ set.seed(1) # This makes the plot appear the same each time it is run
 C4<-heat_tree(obj, 
                title = "4 pooled cores",
                title_size = 0.05,
-               node_label = ifelse(obj$data$tax_occ[[5]] <=12,"",taxon_names), # present in 10%+ samples (n=28)
+               node_label = ifelse(obj$data$tax_occ[[5]] <=12,"",taxon_names), # present in 50%+ samples (n=24)
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = obj$data$tax_occ[[5]], 
-               node_color_range = blue_palette(), #default is diverging_palette
+               node_color_range = grey_palette(), #default is diverging_palette
                node_size_axis_label = "ESVs",
                node_color_axis_label = "Samples",
                layout = "davidson-harel", # The primary layout algorithm
@@ -772,11 +736,11 @@ set.seed(1) # This makes the plot appear the same each time it is run
 C6<-heat_tree(obj, 
                title = "6 pooled cores", 
                title_size = 0.05,
-               node_label = ifelse(obj$data$tax_occ[[6]] <=12,"",taxon_names), # present in 50%+ samples n=28
+               node_label = ifelse(obj$data$tax_occ[[6]] <=12,"",taxon_names), # present in 50%+ samples n=24
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = obj$data$tax_occ[[6]], 
-               node_color_range = blue_palette(), #default is diverging_palette
+               node_color_range = grey_palette(), #default is diverging_palette
                node_size_axis_label = "ESVs",
                node_color_axis_label = "Samples",
                layout = "davidson-harel", # The primary layout algorithm
@@ -786,11 +750,11 @@ set.seed(1) # This makes the plot appear the same each time it is run
 C8<-heat_tree(obj, 
                title = "8 pooled cores",
                title_size = 0.05,
-               node_label = ifelse(obj$data$tax_occ[[7]] <=12,"",taxon_names), # present in 10%+ samples (n=28)
+               node_label = ifelse(obj$data$tax_occ[[7]] <=12,"",taxon_names), # present in 10%+ samples (n=24)
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = obj$data$tax_occ[[7]], 
-               node_color_range = blue_palette(), #default is diverging_palette
+               node_color_range = grey_palette(), #default is diverging_palette
                node_size_axis_label = "ESVs",
                node_color_axis_label = "Samples",
                layout = "davidson-harel", # The primary layout algorithm
@@ -800,11 +764,11 @@ set.seed(1) # This makes the plot appear the same each time it is run
 C915<-heat_tree(obj, 
                title = "9-15 cores pooled",
                title_size = 0.05,
-               node_label = ifelse(obj$data$tax_occ[[8]] <=12,"",taxon_names), # present in 10%+ samples (n=28)
+               node_label = ifelse(obj$data$tax_occ[[8]] <=12,"",taxon_names), # present in 10%+ samples (n=24)
                node_size = n_obs, #default is constant size
                node_label_size_range = c(0.02,0.05), #default c(0.02,0.02)
                node_color = obj$data$tax_occ[[8]], 
-               node_color_range = blue_palette(), #default is diverging_palette
+               node_color_range = grey_palette(), #default is diverging_palette
                node_size_axis_label = "ESVs",
                node_color_axis_label = "Samples",
                layout = "davidson-harel", # The primary layout algorithm
@@ -812,4 +776,4 @@ C915<-heat_tree(obj,
 
 # print both plots on one page
 j<-grid.arrange(C1, C2, C4, C6, C8, C915, ncol=2)
-ggsave("Supp_pooled_heattrees.pdf", j, height=10, width=7.5, units = "in")
+ggsave("FigS8_pooled_heattrees.pdf", j, height=10, width=7.5, units = "in")

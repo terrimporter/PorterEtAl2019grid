@@ -1,4 +1,4 @@
-# Teresita M. Porter, Feb. 13, 2019
+# Teresita M. Porter, July 8, 2019
 
 library(vegan)
 library(reshape2)
@@ -10,11 +10,10 @@ library(scales)
 
 ###################################################################
 
-# Read infile prepared by python script
-## LV2016_2.csv is the taxonomic assignment table
+# Read infile
 A<-read.table(file="LV2016_2.csv", head=TRUE, sep=",")
 
-# Get all ESV counts for Table S2
+# Get all ESV counts
 length(unique(A$marker_OTU))
 #67,626
 length(unique(A$marker_OTU[A$marker=="BE"]))
@@ -22,7 +21,7 @@ length(unique(A$marker_OTU[A$marker=="BE"]))
 length(unique(A$marker_OTU[A$marker=="F230"]))
 #16,769
 
-# Get all ESV read counts for Table S2
+# Get all ESV read counts
 sum(A$reads)
 #19,562,246
 sum(A$reads[A$marker=="BE"])
@@ -77,12 +76,12 @@ p<-ggplot(data=phylumTable.long, aes(x=variable, y=value, fill=Phyla)) +
   annotate("text",x=2, y=0.60,label="7,326,559") +
   annotate("text",x=2, y=0.96,label="2,692,708") 
 
-ggsave("FigS1_phylumdist.pdf")
+ggsave("FigS2_phylumdist.pdf")
 
 # Select phylum Arthropoda only
 Arth_df<-A[A$phylum=="Arthropoda",]
 
-# Get Arthropoda ESVs counts for Table S3
+# Get Arthropoda ESVs counts
 length(unique(Arth_df$marker_OTU))
 #3,598
 length(unique(Arth_df$marker_OTU[Arth_df$marker=="BE"]))
@@ -90,7 +89,7 @@ length(unique(Arth_df$marker_OTU[Arth_df$marker=="BE"]))
 length(unique(Arth_df$marker_OTU[Arth_df$marker=="F230"]))
 #2,823
 
-# Count number of reads in arthropod ESVs for Table S3
+# Count number of reads in arthropod ESVs
 sum(Arth_df$reads)
 #2,692,708
 sum(Arth_df$reads[Arth_df$marker=="BE"])

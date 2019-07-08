@@ -1,5 +1,5 @@
-# Teresita M. Porter, Feb. 13, 2019
-	
+# Teresita M. Porter, July 8, 2019
+
 library(vegan)
 library(ggplot2)
 library(ggpubr)
@@ -56,8 +56,7 @@ rarecurve2 <- function (x, step = 1, sample, xlab = "Sample Size", ylab = "Speci
 }
 ###################################################################
 
-# Read infile prepared by python script
-## LV2016_2.csv is the clean taxonomic assignment table
+# Read infile
 A<-read.table(file="LV2016_2.csv", head=TRUE, sep=",")
 
 # Select phylum Arthropoda only
@@ -132,13 +131,19 @@ NZC_G_notnull2<-NZC_G_notnull[rowSums(NZC_G_notnull) !=0,]
 
 #calculate 15th percentile for rrarefy function
 ILC_A_15percentile<-quantile(rowSums(ILC_A_notnull2), prob=0.15)
+# 2843.8
 NZC_A_15percentile<-quantile(rowSums(NZC_A_notnull2), prob=0.15)
+# 3170.9
 
 ILC_D_15percentile<-quantile(rowSums(ILC_D_notnull2), prob=0.15)
+# 2641.85
 NZC_D_15percentile<-quantile(rowSums(NZC_D_notnull2), prob=0.15)
+# 2302.3
 
 ILC_G_15percentile<-quantile(rowSums(ILC_G_notnull2), prob=0.15)
+# 2540.6
 NZC_G_15percentile<-quantile(rowSums(NZC_G_notnull2), prob=0.15)
+# 4317.4
 
 ###################################################################
 ##### Plot rarefaction curves
@@ -147,10 +152,9 @@ NZC_G_15percentile<-quantile(rowSums(NZC_G_notnull2), prob=0.15)
 set.seed(1234)
 
 #print rarefaction curves for each sample to assess read coverage per sample, indicate 15th percentile
-pdf("SF3_rarecurves.pdf")
+pdf("FigS4_rarecurves.pdf")
 par(mfrow=c(3,3))
-#par(mar=c(2,2,2,1))
-#par(mgp=c(1.2,0.5,0))
+
 rarecurve2(ILC_A_notnull2, sample=ILC_A_15percentile, step=100, main="ILC - 1C1E", xlab="Reads", ylab="ESVs", col=c("#4DAF4A","#FF7F00","#377EB8",
                                                                                                                     "#4DAF4A","#FF7F00",
                                                                                                                     rep(c("#4DAF4A","#FF7F00","#377EB8"),6)),

@@ -1,5 +1,5 @@
-# Teresita M. Porter, Feb. 13, 2019
-	
+# Teresita M. Porter, July 8, 2019
+
 library(vegan)
 library(reshape2)
 library(gridExtra)
@@ -10,8 +10,7 @@ library(scales)
 
 ###################################################################
 
-# Read infile prepared by python script
-## LV2016_2.csv is the taxonomic assignment table
+# Read infile
 A<-read.table(file="LV2016_2.csv", head=TRUE, sep=",")
 
 # Select phylum Arthropoda only
@@ -40,7 +39,7 @@ df$status = factor(df$status, levels=c("all","good"),
 p<-ggplot(df, aes(fill=status, y=value, x=rank)) +
   geom_bar(position="dodge",stat="identity") +
   scale_x_discrete(limits = rev(levels(rank))) +
-  labs(x="Rank", y="Unique taxa") +
+  labs(x="Rank", y="Unique Arthropod Taxa") +
   theme_bw() + 
   theme(panel.border = element_blank(), 
         panel.grid.major = element_blank(),
@@ -53,4 +52,4 @@ p<-ggplot(df, aes(fill=status, y=value, x=rank)) +
         axis.text=element_text(size=14),
         axis.title=element_text(size=14),
         axis.title.x=element_blank())
-ggsave("F1_confidentids.pdf")
+ggsave("FigS3_confidentids.pdf")
