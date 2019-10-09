@@ -19,7 +19,7 @@ This repository contains the dataflow and scripts I used to process the COI meta
 2. The resulting taxonomic assignments for each marker were concatenated (LV2016_1.tar.gz) and headers edited for analysis in R (LV2016_2.tar.gz) using GRDIname.map and the Perl script reviseGRDInames2.plx .  
 
 3. Figures were pepared in R as follows:
-  * Fig 2 was generated with Fig2_Richness_FigS4_Venn_ESV_062819.R . 
+  * Fig 2 was generated with Fig2_Richness_FigS4_Venn_ESV_100919.R . 
   * Fig 3 was generated with Fig3_BetaDiv_100819.R from LV2016_2.csv and metadata.csv .
   * Fig 4 was generated with Fig4_FigS7_FigS8_FigS9_indicator_heattree_ESV_100819.R .  
   
