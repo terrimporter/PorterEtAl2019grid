@@ -2,11 +2,15 @@
 
 This repository contains the dataflow and scripts I used to process the COI metabarcode reads in the paper Porter et al., 2019 available from BioRxiv https://doi.org/10.1101/693499 .
 
-## Supporting Files
+## Infiles
 
 1. The denoised ESV fasta files for the BE and F230 amplicons are in denoised_ESVs.fastas.zip
 
 2. The original taxonomic assignment matrix from the SCVUC bioinformatic pipeline is LV2016_1.tar.gz
+
+3. Taxonomic assignment matrix with edited headers LV2016_2.tar.gz
+
+4. Metadata including latitute and longitude in metadata.csv
 
 ## Data analysis outline
 
