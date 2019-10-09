@@ -27,7 +27,7 @@ This repository contains the dataflow and scripts I used to process the COI meta
   * Fig S1 was generated with FigS1_phyla.R . 
   * Fig S2 was generated with FigS2_PropConfID.R . 
   * Fig S3 was generated with FigS3_Rarefaction.R . 
-  * Fig S4 was generated with Fig1_Richness_FigS4_Venn_ESV_100919.R . 
+  * Fig S4 was generated with Fig2_Richness_FigS4_Venn_ESV_100919.R . 
   * Fig S5 was generated with FigS5_RichnessDNAextn.R .
   * Fig S6 was generated with FigS6_heatmap_indic_ESVs_100919.R
   * Fig S7, S8, S9 were generated with Fig4_FigS7_FigS8_FigS9_indicator_heattree_ESV_100819.R .
