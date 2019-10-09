@@ -10,8 +10,8 @@ library(reshape2)
 library(dplyr)
 library("car")
 # to calculate venn counts
-source("http://www.bioconductor.org/biocLite.R")
-biocLite("limma")
+#source("http://www.bioconductor.org/biocLite.R")
+#biocLite("limma")
 library(limma)
 library(ggforce) # to draw circles with ggplot
 
@@ -65,15 +65,13 @@ master<-read.table(file="LV2016_2.csv", head=TRUE, sep=",")
 # Select phylum Arthropoda only (use this to get overall richness across all expts)
 Arth_df<-master[master$phylum=="Arthropoda",]
 
-# OTU matrix for 1C1E experiment (n=8 x 3 layers)
-#A<-Arth_df[Arth_df$extractions=="1",]
-
 ###############################################################
 # Create matrices for Fig 1A, bioinformatic pooling 1-15 cores
 # OTU matrix for 1C3E experiment ( n=36 x 3 layers)
 B<-Arth_df[(Arth_df$cores=="1") & (Arth_df$extractions=="3"),]
 
 # randomly sample 1 gridcoord from ILC and NZC sites, repeat this sampling 4 times, create matrix for rarefaction
+set.seed(1234)
 B.ILC.gridcoord.1<-t(as.matrix(sapply(rep(1,4), function (x) sample(unique(B$gridcoord[B$site=="ILC45"]), x, replace=FALSE))))
 B.ILC.gridcoord.2<-sapply(rep(2,4), function (x) sample(unique(B$gridcoord[B$site=="ILC45"]), x, replace=FALSE))
 B.ILC.gridcoord.4<-sapply(rep(4,4), function (x) sample(unique(B$gridcoord[B$site=="ILC45"]), x, replace=FALSE))
@@ -330,8 +328,6 @@ NZC_E_15percentile<-quantile(rowSums(NZC_E_notnull2), prob=0.15)
 NZC_F_15percentile<-quantile(rowSums(NZC_F_notnull2), prob=0.15)
 NZC_G_15percentile<-quantile(rowSums(NZC_G_notnull2), prob=0.15)
 
-set.seed(1234)
-
 ###################################################################
 ##### Rarefy the dataset down to the 15th percentile
 ###################################################################
@@ -339,6 +335,7 @@ set.seed(1234)
 ### Only do this for OTUs becaue too much missing data for genus and family ranks ###
 #Rarefy original ILC matrices down to 15th percentile library size to normalize read depth across samples
 # sites in rows, OTUs in columns, reads in cells
+set.seed(1234)
 ILC_Arth_df<-rrarefy(ILC_Arth_notnull2,sample=ILC_Arth_15percentile)
 ILC_B_df<-rrarefy(ILC_B_notnull2,sample=ILC_B_15percentile)
 ILC_B.combo.df_df<-rrarefy(ILC_B.combo.df_notnull2,sample=ILC_B.combo.df_15percentile)
@@ -848,23 +845,27 @@ ggsave("F2_richness_ESV.pdf", g, width=8, height=10, units="in")
 
 #####################################
 # Check for normality with Shapiro-Wilk’s test, sig result means not normal
+set.seed(1234)
 shapiro.test(summary_ext$richness)
-# W = 0.94999, p-value = 0.001259
+# W = 0.94895, p-value = 0.001083
 
 #visual inspection, sometimes small sample sizes can pass normality tests
 qqPlot(summary_ext$richness)
 
 # Use Kruskal-Wallis test to check for any significant differences among extractions
+set.seed(1234)
 new<-summary_ext
 new$extractions<-as.factor(new$extractions)
 kruskal.test(richness ~ extractions, data = new)
-# Kruskal-Wallis chi-squared = 0.41817, df = 1, p-value = 0.5179
+# Kruskal-Wallis chi-squared = 0.39408, df = 1, p-value = 0.5302
 
 # Use multiple pairwise-comparison bewteen groups to check for specific diffs across cores just in case 
 # p.adjust method Benjamini & Hochberg (1995)
+set.seed(1234)
 pairwise.wilcox.test(new$richness, new$extractions,
                      p.adjust.method = "BH")
-# n/s
+#      1C1E
+# 1C3E 0.53
 
 #################################################################
 ### Create venn diagrams from rarefied data
@@ -975,78 +976,97 @@ g <- grid.arrange(v1, v2, layout_matrix = lay)
 ggsave("FigS4_Venn.pdf", g)
 
 #################################################################
-### Calc greatest richness detected including up to 15 individually collected cores versus up to 15 pooled cores
+### compare individual collection of 15 samples with pooling 15 samples manually (abstract)
 
-## Bioinformatically pooled
-# convert to presence-absence ILC
-ILC_B.combo.df_df[ILC_B.combo.df_df > 0] <- 1
-# check 15 indvidually pooled cores
-median(rowSums(ILC_B.combo.df_df[grepl("_15_", rownames(ILC_B.combo.df_df)),]))
-# 595.5 
-sd(rowSums(ILC_B.combo.df_df[grepl("_15_", rownames(ILC_B.combo.df_df)),]))
-# 153.1
+# combine summary_num and summary_bio into same table for analysis (15 cores)
 
-# convert to presence-absence NZC
-NZC_B.combo.df_df[NZC_B.combo.df_df > 0] <- 1
-# check 15 indvidually pooled cores
-median(rowSums(NZC_B.combo.df_df[grepl("_15_", rownames(NZC_B.combo.df_df)),]))
-# 510
-sd(rowSums(NZC_B.combo.df_df[grepl("_15_", rownames(NZC_B.combo.df_df)),]))
-# 128.1
+# bioinformatically pooled dataset (individually sampled)
+# up to 15 cores only
+bio15 <- summary_bio[summary_bio$cores == "15",]
+# only keep richness, site, cores fields
+bio15 <- bio15[,-c(3,5)]
+# add column to indicate treatment
+bio15$treatment <- "bio"
 
-## Manually pooled
-# convert to presence-absence ILC
-ILC_G_df[ILC_G_df > 0] <- 1
-# check 15 indvidually pooled cores
-median(rowSums(ILC_G_df[grepl("_15C3E_", rownames(ILC_G_df)),]))
-# 167
-sd(rowSums(ILC_G_df[grepl("_15C3E_", rownames(ILC_G_df)),]))
-# 74.5
+# manualy pooled dataset
+# up to 15 cores only
+man15 <- summary_num[summary_num$cores == "9_15",]
+# only keep richness, site, cores fields
+man15 <- man15[,-c(3,5)]
+# add column to indicate treatment
+man15$treatment <- "man"
 
-# convert to presence-absence NZC
-NZC_G_df[NZC_G_df > 0] <- 1
-# check 15 indvidually pooled cores
-median(rowSums(NZC_G_df[grepl("_15C3E_", rownames(NZC_G_df)),]))
-# 126
-sd(rowSums(NZC_G_df[grepl("_15C3E_", rownames(NZC_G_df)),]))
-# 84.6
+# combine into single df for comparison
+bio_man <- rbind(bio15, man15)
+
+# indv, ILC
+median(bio_man$richness[bio_man$site =="Island Lake" & bio_man$treatment == "bio"])
+# 614
+# indv, NZC
+median(bio_man$richness[bio_man$site =="Nimitz" & bio_man$treatment == "bio"])
+# 488
+
+# man, ILC
+median(bio_man$richness[bio_man$site =="Island Lake" & bio_man$treatment == "man"])
+# 165
+# indv, NZC
+median(bio_man$richness[bio_man$site =="Nimitz" & bio_man$treatment == "man"])
+# 191
+
+#####################################
+# Check for normality with Shapiro-Wilk’s test, sig result means not normal
+set.seed(1234)
+shapiro.test(bio_man$richness)
+# W = 0.89584, p-value = 0.0004627
+
+#visual inspection, sometimes small sample sizes can pass normality tests
+qqPlot(bio_man$richness)
+
+# Use Kruskal-Wallis test to check for any significant differences among extractions
+set.seed(1234)
+bio_man$treatment<-as.factor(bio_man$treatment)
+kruskal.test(richness ~ treatment, data = bio_man)
+# Kruskal-Wallis chi-squared = 35.271, df = 1, p-value = 2.869e-09
+
+# Use multiple pairwise-comparison bewteen groups to check for specific diffs across cores just in case 
+# p.adjust method Benjamini & Hochberg (1995)
+set.seed(1234)
+pairwise.wilcox.test(bio_man$richness, bio_man$treatment,
+                     p.adjust.method = "BH")
+
+# bio    
+# man 3.1e-09
 
 #########
-# Figure out how many single cores would need to be sampled to match results from largest class of pooled cores
+# How many single cores would need to be sampled to match results from largest class of pooled cores
 # summary_num, pool data across sites and layers, get median richness
-median(summary_num$richness[summary_num$cores=="9_15" & 
-                          (summary_num$layer == "Bryophyte" |
-                          summary_num$layer == "Organic")])
-# 205.5 ESVs
-sd(summary_num$richness[summary_num$cores=="9_15" & 
-                              (summary_num$layer == "Bryophyte" |
-                                 summary_num$layer == "Organic")])
-# 34.0 ESVs
+median(summary_num$richness[summary_num$cores=="9_15"])
+# 170 ESVs
+sd(summary_num$richness[summary_num$cores=="9_15"])
+# 74.26ESVs
 
 # summary_bio, pool data across sites and layer, get median richness
-median(summary_bio$richness[summary_bio$cores=="1" & 
-                         (summary_bio$layer == "Bryophyte" |
-                          summary_bio$layer == "Organic")])
-# 177 ESVs
-sd(summary_bio$richness[summary_bio$cores=="1" & 
-                        (summary_bio$layer == "Bryophyte" |
-                         summary_bio$layer == "Organic")])
-# 43.6
+median(summary_bio$richness[summary_bio$cores=="1"])
+# 115 ESVs
+sd(summary_bio$richness[summary_bio$cores=="1"])
+# 63.4
+
+# summary_bio, pool data across sites and layer, get median richness
+median(summary_bio$richness[summary_bio$cores=="2"])
+# 263 ESVs
+sd(summary_bio$richness[summary_bio$cores=="2"])
+# 101.3
 
 # Use multiple pairwise-comparison bewteen groups to check for specific diffs across cores just in case 
 # p.adjust method Benjamini & Hochberg (1995)
 
 # grab data for 15 field pooled cores
-composite915 <- data.frame(summary_num$richness[summary_num$cores=="9_15" & 
-                       (summary_num$layer == "Bryophyte" |
-                          summary_num$layer == "Organic")])
+composite915 <- data.frame(summary_num$richness[summary_num$cores=="9_15"])
 composite915$type <- "composite915"
 names(composite915)[1] <- "richness"
 
 # grab richness for 15 individual cores
-individual15 <- data.frame(summary_bio$richness[summary_bio$cores=="15" & 
-                       (summary_bio$layer == "Bryophyte" |
-                          summary_bio$layer == "Organic")])
+individual15 <- data.frame(summary_bio$richness[summary_bio$cores=="15"])
 individual15$type <- "individual15"
 names(individual15)[1] <- "richness"
 
@@ -1055,10 +1075,12 @@ comp <- rbind(composite915, individual15)
 
 pairwise.wilcox.test(comp$richness, comp$type,
                      p.adjust.method = "BH")
-# 1.5e-06 
-
+# composite915
+# individual15 3.1e-09
+min(composite915$richness)
+# 33
 median(composite915$richness)
-# 205.5
+# 170
 median(individual15$richness)
-# 598.5
+# 558.5
 
