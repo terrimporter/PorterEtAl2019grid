@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-# Teresita M. Porter
+# Teresita M. Porter, Oct. 9, 2019
 # Script to fix badly formatted sample names from Lisa's 2016 Grid Experiment sequence files.  Use mapping file based on 2016 metadata spreadsheet.
 # USAGE perl reviseGRDInames.plx LV2016_1.txt GRDIname.map
 
