@@ -8,9 +8,11 @@ This repository contains the dataflow and scripts I used to process the COI meta
 
 2. The original taxonomic assignment matrix from the SCVUC bioinformatic pipeline is LV2016_1.tar.gz
 
-3. Taxonomic assignment matrix with edited headers LV2016_2.tar.gz
+3. Sample x Filename map GRDIname.map
 
-4. Metadata including latitute and longitude in metadata.csv
+4. Taxonomic assignment matrix with edited headers LV2016_2.tar.gz
+
+5. Metadata including latitute and longitude in metadata.csv
 
 ## Data analysis outline
 
