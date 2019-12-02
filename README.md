@@ -38,4 +38,4 @@ This repository contains the dataflow and scripts I used to process the COI meta
 
 I would like to acknowledge funding from the Canadian government from the Genomics Research and Development Initiative (GRDI) Ecobiomics project.
 
-Last updated: October 9, 2019
+Last updated: December 2, 2019
