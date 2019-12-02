@@ -10,7 +10,7 @@ This repository contains the dataflow and scripts I used to process the COI meta
 
 3. Sample x filename map GRDIname.map
 
-4. Taxonomic assignment matrix with edited headers LV2016_2.tar.gz
+4. Taxonomic assignment matrix for ESVs with edited headers LV2016_2.tar.gz.  Taxonomic assignment matrix for OTUs with edited headers LV2016_4.tar.gz.
 
 5. Metadata including latitude and longitude in metadata.csv
 
