@@ -2,6 +2,9 @@
 
 This repository contains the dataflow and scripts I used to process the COI metabarcode reads in the paper Porter et al., 2019 available from BioRxiv https://doi.org/10.1101/693499 .
 
+If you use these data files or scripts in future work, please cite:
+Porter, T.M., Morris, D.M., Basiliko, N., Hajibabaei, M., Doucet, D., Bowman, S., Emilson, E.J.S., Emilson, C.E., Chartrand, D., Wainio-Keizer, K., Séguin, A., Venier, L.  2019.  Variations in terrestrial arthropod DNA metabarcoding methods recovers robust beta diversity but variable richness and site indicators.  Scientific Reports, 9: 18218. https://www.nature.com/articles/s41598-019-54532-0
+
 ## Infiles
 
 1. The denoised ESV fasta files for the BE and F230 amplicons are in denoised_ESVs.fastas.zip
