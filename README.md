@@ -2,7 +2,7 @@
 
 This repository contains the dataflow and scripts I used to process the COI metabarcode reads in the paper "Variations in terrestrial arthropod DNA metabarcoding methods recovers robust beta diversity but variable richness and site indicators" in Scientific Reports.
 
-If you use these data files or scripts in future work, please cite:  
+### If you use these data files or scripts in future work, please cite:  
 
 Porter, T.M., Morris, D.M., Basiliko, N., Hajibabaei, M., Doucet, D., Bowman, S., Emilson, E.J.S., Emilson, C.E., Chartrand, D., Wainio-Keizer, K., Séguin, A., Venier, L.  2019.  Variations in terrestrial arthropod DNA metabarcoding methods recovers robust beta diversity but variable richness and site indicators.  Scientific Reports, 9: 18218. https://www.nature.com/articles/s41598-019-54532-0
 
