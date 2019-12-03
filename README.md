@@ -18,7 +18,7 @@ Porter, T.M., Morris, D.M., Basiliko, N., Hajibabaei, M., Doucet, D., Bowman, S.
 
 5. Metadata including latitude and longitude in metadata.csv
 
-## Data analysis outline
+## Scripts
 
 1. Raw reads were processed using the SCVUC v2.0 pipeline available from https://github.com/EcoBiomics-Zoobiome/SCVUC_COI_metabarcode_pipeline . 
 
@@ -42,4 +42,4 @@ Porter, T.M., Morris, D.M., Basiliko, N., Hajibabaei, M., Doucet, D., Bowman, S.
 
 I would like to acknowledge funding from the Canadian government from the Genomics Research and Development Initiative (GRDI) Ecobiomics project.
 
-Last updated: December 2, 2019
+Last updated: December 3, 2019
